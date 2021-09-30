@@ -4,7 +4,7 @@ import flixel.math.FlxMath;
 
 class RatingSystem
 {
-	public static var gradeArray:Array<String> = ["FC++","FC","FC-","S+","S","S-","A+","A","A-","B+","B","B-","C+","C","C-","D"];
+	public static var gradeArray:Array<String> = ["Sick!","Great","Good","Nice","Meh","Bruh","Bad","Shit","You Suck!","N/A"];
 	public static var ghostTapping:Bool=false;	
 
 	public static var ratingStrings = [
@@ -18,20 +18,15 @@ class RatingSystem
 	{
 		    return [
             1.0,
-            .98,
-            .96,
-            .94,
-            .92,
-            .89,
-            .86,
-            .83,
-            .8,
-            .76,
-            .72,
-            .68,
-            .64,
+            .9,
+            .8, 
+            .7,
+            .69,
             .6,
-            .55,
+            .5,
+            .4,
+			.2,
+			.0,
         ];
 	}
 	public static function AccuracyToGrade(accuracy:Float):String 

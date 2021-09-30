@@ -215,6 +215,10 @@ class StoryMenuState extends MusicBeatState
 		updateText();
 
 		trace("Line 165");
+		
+		#if mobileC
+		addVirtualPad(FULL, A_B);
+		#end
 
 		super.create();
 	}
@@ -320,7 +324,7 @@ class StoryMenuState extends MusicBeatState
 			PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
 			PlayState.storyWeek = curWeek;
 			PlayState.campaignScore = 0;
-			
+			#if desktop
 			if (FlxG.save.data.cutscenes)
 			{
                 if (curWeek == 7)
@@ -337,6 +341,9 @@ class StoryMenuState extends MusicBeatState
 			{
 			    LoadingState.loadAndSwitchState(new PlayState(), true);
 			}
+			#else
+			LoadingState.loadAndSwitchState(new PlayState(), true);
+			#end
 		}
 	}
 

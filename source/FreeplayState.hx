@@ -9,11 +9,13 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import lime.utils.Assets;
+import flixel.util.FlxTimer;
 
 using StringTools;
 
 class FreeplayState extends MusicBeatState
 {
+    var songTimer:FlxTimer;
 	var songs:Array<SongMetadata> = [];
 
 	var selector:FlxText;
@@ -36,21 +38,43 @@ class FreeplayState extends MusicBeatState
 
 		for (i in 0...initSonglist.length)
 		{
-			var data:Array<String> = initSonglist[i].split(':');
-			songs.push(new SongMetadata(data[0], Std.parseInt(data[2]), data[1]));
+			songs.push(new SongMetadata(initSonglist[i], 1, 'gf'));
 		}
+
+		/* 
+			if (FlxG.sound.music != null)
+			{
+				if (!FlxG.sound.music.playing)
+					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			}
+		 */
 
 		var isDebug:Bool = false;
 
 		#if debug
 		isDebug = true;
-		#end
+		#end	
+		
+		addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], 1, ['dad']);
+
+		addWeek(['Spookeez', 'South', 'Monster'], 2, ['spooky','spooky','monster']);
+
+		addWeek(['Pico', 'Philly', 'Blammed'], 3, ['pico']);
+
+		addWeek(['Satin-Panties', 'High', 'Milf'], 4, ['mom']);
+
+		addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], 5, ['parents-christmas', 'parents-christmas', 'monster-christmas']);
+
+		addWeek(['Senpai', 'Roses', 'Thorns'], 6, ['senpai', 'senpai', 'spirit']);
+			
+		addWeek(['Ugh', 'Guns', 'Stress'], 7, ['tankman']);			
 
 		// LOAD MUSIC
 
 		// LOAD CHARACTERS
 
-		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBGBlue'));
+		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBG'));
+		bg.color = 0xFFA271DE;		
 		add(bg);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
@@ -58,7 +82,7 @@ class FreeplayState extends MusicBeatState
 
 		for (i in 0...songs.length)
 		{
-			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
+			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName.split("-").join(" "), true, false);
 			songText.isMenuItem = true;
 			songText.targetY = i;
 			grpSongs.add(songText);
@@ -97,6 +121,10 @@ class FreeplayState extends MusicBeatState
 
 		selector.size = 40;
 		selector.text = ">";
+		
+		#if mobileC
+		addVirtualPad(FULL, A_B);
+		#end
 
 		super.create();
 	}
@@ -124,11 +152,16 @@ class FreeplayState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		
+		if (FlxG.sound.music != null && FlxG.sound.music.playing)
+		{
+			Conductor.songPosition = FlxG.sound.music.time;
+		}
 
 		if (FlxG.sound.music.volume < 0.7)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
-		}
+		}		
 
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, 0.4));
 
@@ -202,7 +235,6 @@ class FreeplayState extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
-		// NGio.logEvent('Fresh');
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		curSelected += change;
@@ -212,15 +244,28 @@ class FreeplayState extends MusicBeatState
 		if (curSelected >= songs.length)
 			curSelected = 0;
 
-		// selector.y = (70 * curSelected) + 30;
-
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
-		// lerpScore = 0;
 		#end
-
+		
 		#if PRELOAD_ALL
-		FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0);
+		if (FlxG.sound.music.playing)
+		{
+			FlxG.sound.music.stop();
+		}
+		if (songTimer != null)
+		{
+			songTimer.cancel();
+			songTimer.destroy();
+		}
+		songTimer = new FlxTimer().start(2, function(tmr:FlxTimer)
+		{
+			if (FlxG.sound.music.playing)
+			{
+				FlxG.sound.music.stop();
+			}
+			FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName), 0);
+		}, 1);
 		#end
 
 		var bullShit:Int = 0;
@@ -238,12 +283,10 @@ class FreeplayState extends MusicBeatState
 			bullShit++;
 
 			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
 
 			if (item.targetY == 0)
 			{
 				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
 			}
 		}
 	}

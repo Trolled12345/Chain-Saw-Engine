@@ -117,12 +117,16 @@ class Keys extends Option
 	
 	public override function press():Bool
 	{
+	    #if desktop
 		FlxG.switchState(new KeyBindMenu());
+		#else
+		FlxG.switchState(new options.CustomControlsState());
+		#end
         return false;
 	}
 	private override function updateDisplay():String
 	{
-		return "Keys";
+		return "Controls";
 	}
 
 }
@@ -139,6 +143,21 @@ class NoteSplashs extends Option
 	private override function updateDisplay():String
 	{
 		return "Note Splashes " + (FlxG.save.data.notesplash ? "on" : "off");
+	}
+}
+
+class MiddleScroll extends Option
+{	
+	public override function press():Bool
+	{
+		FlxG.save.data.middle = !FlxG.save.data.middle;
+		display = updateDisplay();
+		return true;
+	}
+	
+	private override function updateDisplay():String
+	{
+		return "Middle Scroll " + (FlxG.save.data.middle ? "on" : "off");
 	}
 }
 
@@ -168,6 +187,52 @@ class Cutscenes extends Option
 	
 	private override function updateDisplay():String
 	{
-		return "Cutscenes " + (FlxG.save.data.cutscenes ? "on" : "off");
+		return "Video Cutscenes " + (FlxG.save.data.cutscenes ? "on" : "off");
+	}
+}
+
+class Practice extends Option
+{	
+	public override function press():Bool
+	{
+		FlxG.save.data.practice = !FlxG.save.data.practice;
+		display = updateDisplay();
+		return true;
+	}
+	
+	private override function updateDisplay():String
+	{
+		return "Practice Mode " + (!FlxG.save.data.practice ? "on" : "off");
+	}
+}
+
+class FPSOption extends Option
+{
+    public override function press():Bool
+	{
+		FlxG.save.data.fps = !FlxG.save.data.fps;
+		(cast (Lib.current.getChildAt(0), Main)).toggleFPS(FlxG.save.data.fps);
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "FPS Counter " + (FlxG.save.data.fps ? "on" : "off");
+	}
+}
+
+class SongInfo extends Option
+{	
+	public override function press():Bool
+	{
+		FlxG.save.data.songtext = !FlxG.save.data.songtext;
+		display = updateDisplay();
+		return true;
+	}
+	
+	private override function updateDisplay():String
+	{
+		return "Song Info Text " + (!FlxG.save.data.songtext ? "on" : "off");
 	}
 }

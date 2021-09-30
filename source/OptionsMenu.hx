@@ -37,7 +37,13 @@ class OptionsMenu extends MusicBeatState
 		]),
 		
 		new OptionCategory("Preferences", [
+		    #if desktop
 			new Cutscenes(),
+			#end
+			new Practice(),
+			//new MiddleScroll(),
+			new FPSOption(),
+			new SongInfo()			
 		])
 	];
 
@@ -47,13 +53,14 @@ class OptionsMenu extends MusicBeatState
 
 	var currentSelectedCat:OptionCategory;
 	var blackBorder:FlxSprite;
+	
 	override function create()
 	{
 		instance = this;
 		
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image("menuBG"));
+		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image("menuDesat"));
 
-		menuBG.color = 0xFFA271DE;
+		menuBG.color = 0xFFa271de;
 		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
 		menuBG.updateHitbox();
 		menuBG.screenCenter();
@@ -69,8 +76,11 @@ class OptionsMenu extends MusicBeatState
 			controlLabel.isMenuItem = true;
 			controlLabel.targetY = i;
 			grpControls.add(controlLabel);
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
 		}
+		
+		#if mobileC
+		addVirtualPad(UP_DOWN, A_B);
+		#end
 
 		super.create();
 	}
@@ -96,7 +106,6 @@ class OptionsMenu extends MusicBeatState
 						controlLabel.isMenuItem = true;
 						controlLabel.targetY = i;
 						grpControls.add(controlLabel);
-						// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
 					}
 				curSelected = 0;
 			}
@@ -152,7 +161,6 @@ class OptionsMenu extends MusicBeatState
 							controlLabel.isMenuItem = true;
 							controlLabel.targetY = i;
 							grpControls.add(controlLabel);
-							// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
 						}
 					curSelected = 0;
 				}

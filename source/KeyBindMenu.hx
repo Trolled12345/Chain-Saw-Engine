@@ -1,7 +1,6 @@
 package;
 
-/// Code created by Rozebud for FPS Plus (thanks rozebud)
-// modified by KadeDev for use in Kade Engine/Tricky
+/// Code created by Rozebud for FPS Plus
 
 import flixel.util.FlxAxes;
 import flixel.FlxSubState;
@@ -33,6 +32,7 @@ class KeyBindMenu extends FlxSubState
 
     var keyTextDisplay:FlxText;
     var keyWarning:FlxText;
+	var menuBG:FlxSprite;
     var warningTween:FlxTween;
     var keyText:Array<String> = ["LEFT", "DOWN", "UP", "RIGHT"];
     var defaultKeys:Array<String> = ["A", "S", "W", "D", "R"];
@@ -60,35 +60,33 @@ class KeyBindMenu extends FlxSubState
             if (k == null)
                 keys[i] = defaultKeys[i];
         }
-	
-		//FlxG.sound.playMusic('assets/music/configurator' + TitleState.soundExt);
 
 		persistentUpdate = persistentDraw = true;
 		
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image("menuDesat"));
-		menuBG.color = FlxColor.RED;
-		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
-		menuBG.updateHitbox();
-		menuBG.screenCenter();
-		menuBG.antialiasing = true;		
+		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
+		bg.scrollFactor.x = 0;
+		bg.scrollFactor.y = 0;
+		bg.setGraphicSize(Std.int(bg.width * 1.18));
+		bg.updateHitbox();
+		bg.screenCenter();
+		bg.antialiasing = true;
+		bg.color = 0xFF9766BE;
+		add(bg);
 
         keyTextDisplay = new FlxText(-10, 0, 1280, "", 72);
 		keyTextDisplay.scrollFactor.set(0, 0);
-		keyTextDisplay.setFormat("VCR OSD Mono", 42, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		keyTextDisplay.setFormat(Paths.font("Funkin-Bold.otf"), 72, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		keyTextDisplay.borderSize = 2;
 		keyTextDisplay.borderQuality = 3;
+        add(keyTextDisplay);
 
         infoText = new FlxText(-10, 580, 1280, "(Escape to save, backspace to leave without saving)", 72);
 		infoText.scrollFactor.set(0, 0);
-		infoText.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		infoText.setFormat(Paths.font("Funkin-Bold.otf"), 24, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		infoText.borderSize = 2;
 		infoText.borderQuality = 3;
         infoText.screenCenter(FlxAxes.X);
-		add(menuBG);
         add(infoText);
-        add(keyTextDisplay);
-
-        OptionsMenu.instance.acceptInput = false;
 
         textUpdate();
 

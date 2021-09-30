@@ -39,6 +39,9 @@ import lime.utils.Assets;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+#if mobileC
+import ui.Mobilecontrols;
+#end
 
 using StringTools;
 
@@ -117,6 +120,7 @@ class PlayState extends MusicBeatState
 	var grpNoteSplashes:FlxTypedGroup<NoteSplash>;
 	var noteSplashOp:Bool;
 	var cutsceneOp:Bool;
+	var middleScroll:Bool;	
 	var fastCar:FlxSprite;
 
 	var upperBoppers:FlxSprite;
@@ -156,12 +160,9 @@ class PlayState extends MusicBeatState
 
 	var inCutscene:Bool = false;
 	
-	// modcharting
-
-	var modcharting:Bool = false;
-	var modchart:String;
-
-	var lastModchart:Bool = false;
+	#if mobileC
+	var mcontrols:Mobilecontrols; 
+	#end
 
 	override public function create()
 	{		
@@ -926,6 +927,7 @@ class PlayState extends MusicBeatState
 		
 		noteSplashOp = FlxG.save.data.notesplash;
 		cutsceneOp = FlxG.save.data.cutscenes;
+		middleScroll = FlxG.save.data.middle;
 
 		playerStrums = new FlxTypedGroup<FlxSprite>();
 		player2Strums = new FlxTypedGroup<FlxSprite>();
@@ -979,7 +981,12 @@ class PlayState extends MusicBeatState
 		if (FlxG.save.data.downscroll)
 			songinfotxt.y = FlxG.height * 0.9 + 45;
 		
-		scoreTxt = new FlxText(healthBarBG.x + healthBarBG.width / 2 - 150, healthBarBG.y + 25, 0, "", 20);
+		if (FlxG.save.data.songtext)
+		{
+		    songinfotxt.alpha = 0;
+		}
+		
+		scoreTxt = new FlxText(healthBarBG.x + healthBarBG.width / 2 - 150, healthBarBG.y + 50, 0, "", 20);
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
 		add(scoreTxt);
@@ -1002,6 +1009,28 @@ class PlayState extends MusicBeatState
 		scoreTxt.cameras = [camHUD];
 		doof.cameras = [camHUD];
 		songinfotxt.cameras = [camHUD];
+		#if mobileC
+			mcontrols = new Mobilecontrols();
+			switch (mcontrols.mode)
+			{
+				case VIRTUALPAD_RIGHT | VIRTUALPAD_LEFT | VIRTUALPAD_CUSTOM:
+					controls.setVirtualPad(mcontrols._virtualPad, FULL, NONE);
+				case HITBOX:
+					controls.setHitBox(mcontrols._hitbox);
+				default:
+			}
+			trackedinputs = controls.trackedinputs;
+			controls.trackedinputs = [];
+
+			var camcontrol = new FlxCamera();
+			FlxG.cameras.add(camcontrol);
+			camcontrol.bgColor.alpha = 0;
+			mcontrols.cameras = [camcontrol];
+
+			mcontrols.visible = false;
+
+			add(mcontrols);
+		#end
 
 		// if (SONG.song == 'South')
 		// FlxG.camera.alpha = 0.7;
@@ -1156,6 +1185,9 @@ class PlayState extends MusicBeatState
 
 	function startCountdown():Void
 	{
+		#if mobileC
+		mcontrols.visible = true;
+		#end
 		inCutscene = false;
 
 		generateStaticArrows(0);
@@ -1381,6 +1413,9 @@ class PlayState extends MusicBeatState
 		{
 			// FlxG.log.add(i);
 			var babyArrow:FlxSprite = new FlxSprite(0, strumLine.y);
+			
+			if(middleScroll && player == 0)
+				babyArrow.visible=false;
 
 			switch (curStage)
 			{
@@ -1480,6 +1515,9 @@ class PlayState extends MusicBeatState
 			babyArrow.animation.play('static');
 			babyArrow.x += 50;
 			babyArrow.x += ((FlxG.width / 2) * player);
+			
+			if (middleScroll)
+				babyArrow.x -= 275;
 			
 			player2Strums.forEach(function(spr:FlxSprite)
 			{					
@@ -1609,7 +1647,7 @@ class PlayState extends MusicBeatState
 
 		scoreTxt.text = "Score:" + songScore + " | Accuracy:" + truncateFloat(accuracy*100, 2) + "% | " + grade;
 
-		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)
+		if (FlxG.keys.justPressed.ENTER #if android || FlxG.android.justReleased.BACK #end && startedCountdown && canPause)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
@@ -1816,20 +1854,23 @@ class PlayState extends MusicBeatState
 			health += 1;
 			trace("User is cheating!");
 		}
-
-		if (health <= 0)
+		
+        if (FlxG.save.data.practice)
 		{
-			boyfriend.stunned = true;
+		    if (health <= 0)
+		    {
+			    boyfriend.stunned = true;
 
-			persistentUpdate = false;
-			persistentDraw = false;
-			paused = true;
+			    persistentUpdate = false;
+			    persistentDraw = false;
+			    paused = true;
 
-			vocals.stop();
-			FlxG.sound.music.stop();
+			    vocals.stop();
+			    FlxG.sound.music.stop();
 
-			openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
-		}
+			    openSubState(new GameOverSubstate(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+		    }
+	    }
 
 		if (unspawnNotes[0] != null)
 		{
@@ -1846,7 +1887,9 @@ class PlayState extends MusicBeatState
 		if (generatedMusic)
 		{	
 			notes.forEachAlive(function(daNote:Note)
-			{				
+			{	
+				daNote.cameras = [camNOTES];
+				
 				if (daNote.y > FlxG.height)
 				{
 					daNote.active = false;
@@ -1975,6 +2018,9 @@ class PlayState extends MusicBeatState
 		canPause = false;
 		FlxG.sound.music.volume = 0;
 		vocals.volume = 0;
+		#if mobileC
+		mcontrols.visible = false;
+		#end
 		if (SONG.validScore)
 		{
 			#if !switch
@@ -2040,7 +2086,7 @@ class PlayState extends MusicBeatState
 
 				PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + difficulty, PlayState.storyPlaylist[0]);
 				FlxG.sound.music.stop();
-				
+				#if desktop
 				if (FlxG.save.data.cutscenes)
 			    {   
 				    if (daSong == 'ugh')
@@ -2052,12 +2098,7 @@ class PlayState extends MusicBeatState
 				    {
 					    var video:MP4Handler = new MP4Handler();
                         video.playMP4(Paths.video('stressCutscene'), new PlayState(), false, false, false);
-				    }
-				    else if (daSong == 'stress')
-				    {
-					    var video:MP4Handler = new MP4Handler();
-                        video.playMP4(Paths.video('kickstarterTrailer'), new MainMenuState(), false, false, false);
-				    }				
+				    }			
                     else
 			            LoadingState.loadAndSwitchState(new PlayState());
 			    }
@@ -2065,6 +2106,9 @@ class PlayState extends MusicBeatState
 				{
 			        LoadingState.loadAndSwitchState(new PlayState());
 				}
+				#else
+				LoadingState.loadAndSwitchState(new PlayState());
+				#end
 			}
 		}
 		else
@@ -2404,10 +2448,11 @@ class PlayState extends MusicBeatState
 			combo = 0;
 
 			songScore -= 10;
-
-			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
-			// FlxG.sound.play(Paths.sound('missnote1'), 1, false);
-			// FlxG.log.add('played imss note');
+			
+            if (FlxG.save.data.practice)
+			{
+			    FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+			}		
 
 			boyfriend.stunned = true;
 
