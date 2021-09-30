@@ -4,6 +4,9 @@ This is the repository for Chain-Saw Engine For Friday Night Funkin
 
 ### Installing the Required Programs
 
+For Android Go To LuckyDog7 Page
+https://github.com/luckydog7/Funkin-android
+
 First, you need to install Haxe and HaxeFlixel. I'm too lazy to write and keep updated with that setup (which is pretty simple). 
 1. [Install Haxe 4.1.5](https://haxe.org/download/version/4.1.5/) (Download 4.1.5 instead of 4.2.0 because 4.2.0 is broken and is not working with gits properly...)
 2. [Install HaxeFlixel](https://haxeflixel.com/documentation/install-haxeflixel/) after downloading Haxe
