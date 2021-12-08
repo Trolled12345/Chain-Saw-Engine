@@ -2,7 +2,7 @@ bf
 bf-holding-gf
 dad
 gf
-spooky
+purple
 pico
 mom
 mom-car
